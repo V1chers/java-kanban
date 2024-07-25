@@ -1,6 +1,10 @@
-import TaskManager.*;
+import com.practicum.TaskManager.model.Epic;
+import com.practicum.TaskManager.model.Status;
+import com.practicum.TaskManager.model.Subtask;
+import com.practicum.TaskManager.model.Task;
+import com.practicum.TaskManager.service.TaskManager;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 
 public class Main {
 
@@ -20,22 +24,22 @@ public class Main {
 
         Epic productsEpic = new Epic("купить продукты", "сходить в ближайший магазин во время прогулки");
         taskManager.createEpic(productsEpic);
-        Subtask milkSubtask = new Subtask("купить молоко","", Status.NEW, productsEpic.getId());
+        Subtask milkSubtask = new Subtask("купить молоко", "", Status.NEW, productsEpic.getId());
         taskManager.createSubtask(milkSubtask);
-        Subtask breadSubtask = new Subtask("купить хлеб","", Status.NEW, productsEpic.getId());
+        Subtask breadSubtask = new Subtask("купить хлеб", "", Status.NEW, productsEpic.getId());
         taskManager.createSubtask(breadSubtask);
 
         Epic pigeonsEpic = new Epic("покормить голубей", "покормить голубей купленным в магазине хлебом");
         taskManager.createEpic(pigeonsEpic);
-        Subtask feedSubtask = new Subtask("раскрошить хлеб","что бы голуби смогли его съесть",
-                              Status.NEW, pigeonsEpic.getId());
+        Subtask feedSubtask = new Subtask("раскрошить хлеб", "что бы голуби смогли его съесть",
+                Status.NEW, pigeonsEpic.getId());
         taskManager.createSubtask(feedSubtask);
 
-        HashMap<Integer, Task> tasks = taskManager.getTasks();
+        ArrayList<Task> tasks = taskManager.getTasks();
         System.out.println(tasks);
-        HashMap<Integer, Epic> epics = taskManager.getEpics();
+        ArrayList<Epic> epics = taskManager.getEpics();
         System.out.println(epics);
-        HashMap<Integer, Subtask> subtasks = taskManager.getSubtasks();
+        ArrayList<Subtask> subtasks = taskManager.getSubtasks();
         System.out.println(subtasks);
         System.out.println();
 
@@ -66,9 +70,21 @@ public class Main {
         System.out.println(taskManager.getEpicById(milkSubtask.getEpicId()));
         System.out.println();
 
+        Epic newProductsEpic = new Epic("купить продукты", "сходить в ближайший магазин во время прогулки");
+        Subtask newbreadSubtask = new Subtask("купить хлеб", "", Status.NEW, productsEpic.getId());
+        newProductsEpic.addSubtask(newbreadSubtask);
+        Subtask cheapsSubtask = new Subtask("купить чипсы", "", Status.NEW, productsEpic.getId());
+        newProductsEpic.addSubtask(cheapsSubtask);
+        taskManager.updateEpic(newProductsEpic);
+        System.out.println(taskManager.getEpicById(newProductsEpic.getId()));
+        System.out.println(taskManager.getSubtaskById(breadSubtask.getId()));
+        System.out.println(taskManager.getSubtaskById(cheapsSubtask.getId()));
+        System.out.println(taskManager.getSubtaskById(milkSubtask.getId()));
+        System.out.println();
+
         System.out.println("Тест получения списка всех подзадач определеноого эпика");
 
-        HashMap<Integer, Subtask> subtasksByEpicId = taskManager.getSubtasksOfEpic(1007592185);
+        ArrayList<Subtask> subtasksByEpicId = taskManager.getSubtasksOfEpic(1007592185);
         System.out.println(subtasksByEpicId);
         System.out.println();
 
@@ -89,6 +105,8 @@ public class Main {
         System.out.println("Тест удаления всех задач");
 
         taskManager.deleteAllTasks();
+        taskManager.deleteAllEpics();
+        taskManager.deleteAllSubtasks();
 
         tasks = taskManager.getTasks();
         System.out.println(tasks);

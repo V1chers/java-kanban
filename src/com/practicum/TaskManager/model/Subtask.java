@@ -1,4 +1,4 @@
-package TaskManager;
+package com.practicum.TaskManager.model;
 
 public class Subtask extends Task {
     final private int epicId;

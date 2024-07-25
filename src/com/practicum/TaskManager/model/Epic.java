@@ -1,25 +1,31 @@
-package TaskManager;
+package com.practicum.TaskManager.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Epic extends Task {
-    final private HashMap<Integer, Subtask> subtasks;
+    final private Map<Integer, Subtask> subtasks;
 
     public Epic(String name, String description) {
         super(name, description, Status.NEW);
         subtasks = new HashMap<>();
     }
 
-    void addSubtask(int subtaskId, Subtask subtask) {
-        subtasks.put(subtaskId, subtask);
+    public void addSubtask(Subtask subtask) {
+        subtasks.put(subtask.getId(), subtask);
     }
 
-    void removeSubtask(int subtaskId) {
+    public void removeSubtask(int subtaskId) {
         subtasks.remove(subtaskId);
     }
 
-    HashMap<Integer, Subtask> getSubtasks() {
-        return subtasks;
+    public void removeAllSubtasks() {
+        subtasks.clear();
+    }
+
+    public ArrayList<Subtask> getSubtasks() {
+        return new ArrayList<>(subtasks.values());
     }
 
     @Override
