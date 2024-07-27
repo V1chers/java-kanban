@@ -2,14 +2,17 @@ import com.practicum.TaskManager.model.Epic;
 import com.practicum.TaskManager.model.Status;
 import com.practicum.TaskManager.model.Subtask;
 import com.practicum.TaskManager.model.Task;
+import com.practicum.TaskManager.service.InMemoryTaskManager;
+import com.practicum.TaskManager.service.Managers;
 import com.practicum.TaskManager.service.TaskManager;
 
+import javax.xml.transform.Source;
 import java.util.ArrayList;
 
 public class Main {
 
     public static void main(String[] args) {
-        TaskManager taskManager = new TaskManager();
+        TaskManager taskManager = Managers.getDefault();
 
         System.out.println("Тест создания и получения списка всех задач");
 
