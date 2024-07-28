@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 
 public class InMemoryHistoryManager implements HistoryManager {
     final private Map<Integer, Task> history;
@@ -27,6 +28,6 @@ public class InMemoryHistoryManager implements HistoryManager {
     }
 
     public List<Task> getHistory() {
-        return new ArrayList<>(history.values());
+        return Collections.unmodifiableList(new ArrayList<>(history.values()));
     }
 }

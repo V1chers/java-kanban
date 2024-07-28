@@ -4,7 +4,7 @@ import com.practicum.TaskManager.model.Epic;
 import com.practicum.TaskManager.model.Subtask;
 import com.practicum.TaskManager.model.Task;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public interface TaskManager {
     void createTask(Task task);
@@ -13,11 +13,11 @@ public interface TaskManager {
 
     void createSubtask(Subtask subtask);
 
-    ArrayList<Epic> getEpics();
+    List<Epic> getEpics();
 
-    ArrayList<Task> getTasks();
+    List<Task> getTasks();
 
-    ArrayList<Subtask> getSubtasks();
+    List<Subtask> getSubtasks();
 
     void deleteAllTasks();
 
@@ -43,5 +43,5 @@ public interface TaskManager {
 
     void removeSubtaskById(int subtaskId);
 
-    ArrayList<Subtask> getSubtasksOfEpic(int epicId);
+    List<Subtask> getSubtasksOfEpic(int epicId);
 }

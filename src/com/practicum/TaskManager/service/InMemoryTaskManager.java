@@ -5,10 +5,7 @@ import com.practicum.TaskManager.model.Status;
 import com.practicum.TaskManager.model.Subtask;
 import com.practicum.TaskManager.model.Task;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
     final private Map<Integer, Task> tasks;
@@ -55,18 +52,18 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<Epic> getEpics() {
-        return new ArrayList<>(epics.values());
+    public List<Epic> getEpics() {
+        return Collections.unmodifiableList(new ArrayList<>(epics.values()));
     }
 
     @Override
-    public ArrayList<Task> getTasks() {
-        return new ArrayList<>(tasks.values());
+    public List<Task> getTasks() {
+        return Collections.unmodifiableList(new ArrayList<>(tasks.values()));
     }
 
     @Override
-    public ArrayList<Subtask> getSubtasks() {
-        return new ArrayList<>(subtasks.values());
+    public List<Subtask> getSubtasks() {
+        return Collections.unmodifiableList(new ArrayList<>(subtasks.values()));
     }
 
     @Override
@@ -117,7 +114,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     private void updateEpicStatus(Epic epic) {
-        ArrayList<Subtask> SubtasksOfEpic = epic.getSubtasks();
+        List<Subtask> SubtasksOfEpic = epic.getSubtasks();
         boolean haveNew = false;
         boolean haveInProgress = false;
         boolean haveDone = false;
@@ -221,7 +218,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<Subtask> getSubtasksOfEpic(int epicId) {
+    public List<Subtask> getSubtasksOfEpic(int epicId) {
         Epic epic = epics.get(epicId);
 
         return epic.getSubtasks();

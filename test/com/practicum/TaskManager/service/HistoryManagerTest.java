@@ -4,7 +4,6 @@ import com.practicum.TaskManager.model.Epic;
 import com.practicum.TaskManager.model.Status;
 import com.practicum.TaskManager.model.Subtask;
 import com.practicum.TaskManager.model.Task;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

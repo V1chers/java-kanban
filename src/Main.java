@@ -2,12 +2,10 @@ import com.practicum.TaskManager.model.Epic;
 import com.practicum.TaskManager.model.Status;
 import com.practicum.TaskManager.model.Subtask;
 import com.practicum.TaskManager.model.Task;
-import com.practicum.TaskManager.service.InMemoryTaskManager;
 import com.practicum.TaskManager.service.Managers;
 import com.practicum.TaskManager.service.TaskManager;
 
-import javax.xml.transform.Source;
-import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
 
@@ -38,11 +36,11 @@ public class Main {
                 Status.NEW, pigeonsEpic.getId());
         taskManager.createSubtask(feedSubtask);
 
-        ArrayList<Task> tasks = taskManager.getTasks();
+        List<Task> tasks = taskManager.getTasks();
         System.out.println(tasks);
-        ArrayList<Epic> epics = taskManager.getEpics();
+        List<Epic> epics = taskManager.getEpics();
         System.out.println(epics);
-        ArrayList<Subtask> subtasks = taskManager.getSubtasks();
+        List<Subtask> subtasks = taskManager.getSubtasks();
         System.out.println(subtasks);
         System.out.println();
 
@@ -87,7 +85,7 @@ public class Main {
 
         System.out.println("Тест получения списка всех подзадач определеноого эпика");
 
-        ArrayList<Subtask> subtasksByEpicId = taskManager.getSubtasksOfEpic(1007592185);
+        List<Subtask> subtasksByEpicId = taskManager.getSubtasksOfEpic(1007592185);
         System.out.println(subtasksByEpicId);
         System.out.println();
 

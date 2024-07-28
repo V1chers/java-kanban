@@ -1,8 +1,10 @@
 package com.practicum.TaskManager.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+
+/* equals и hashCode вроде уже созданы были в родительском классе и унаследованы. В Subtask слегка изменил их,
+   ибо epic id финальное число, но в Epic не хочется их изменять, ибо в subtasks значения могут менятся, соотвественно и id,
+   генерируемое для Epic в hashCode, тоже. */
 
 public class Epic extends Task {
     final private Map<Integer, Subtask> subtasks;
@@ -24,18 +26,19 @@ public class Epic extends Task {
         subtasks.clear();
     }
 
-    public ArrayList<Subtask> getSubtasks() {
-        return new ArrayList<>(subtasks.values());
+    public List<Subtask> getSubtasks() {
+        return Collections.unmodifiableList(new ArrayList<>(subtasks.values()));
     }
 
     @Override
     public String toString() {
         return "Epic{" +
                 ", name='" + getName() + '\'' +
-                ", description='" + getDescription().length() + '\'' +
+                ", description='" + getDescription() + '\'' +
                 ", id=" + getId() +
                 ", status=" + getStatus() +
                 ", subtasks=" + subtasks.size() +
                 '}';
     }
+
 }

@@ -110,9 +110,9 @@ class TaskManagerTest {
 
     @Test
     void getTaskById() {
-        Task mayStoolTask = taskManager.getTaskById(strollTask.getId());
+        Task mayStrolTask = taskManager.getTaskById(strollTask.getId());
 
-        assertEquals(strollTask, mayStoolTask);
+        assertEquals(strollTask, mayStrolTask);
     }
 
     @Test
@@ -212,11 +212,11 @@ class TaskManagerTest {
         taskManager.removeSubtaskById(milkSubtask.getId());
 
         List<Subtask> subtasks = taskManager.getSubtasks();
-        List<Subtask> probuctsSubtasks = productsEpic.getSubtasks();
+        List<Subtask> productsSubtasks = productsEpic.getSubtasks();
 
         assertEquals(2, subtasks.size());
         assertFalse(subtasks.contains(milkSubtask));
-        assertEquals(1, probuctsSubtasks.size());
-        assertFalse(probuctsSubtasks.contains(milkSubtask));
+        assertEquals(1, productsSubtasks.size());
+        assertFalse(productsSubtasks.contains(milkSubtask));
     }
 }

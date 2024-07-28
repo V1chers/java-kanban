@@ -52,7 +52,7 @@ public class Task {
     public String toString() {
         return "Task{" +
                 ", name='" + name + '\'' +
-                ", description='" + description.length() + '\'' +
+                ", description='" + description + '\'' +
                 ", id=" + id +
                 ", status=" + status +
                 '}';
