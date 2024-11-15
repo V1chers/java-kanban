@@ -6,7 +6,7 @@ import com.practicum.TaskManager.model.Node;
 import java.util.*;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    final private Map<Integer, Node> history;
+    private final Map<Integer, Node> history;
     private Node first;
     private Node last;
 
