@@ -4,6 +4,7 @@ import com.practicum.TaskManager.model.Epic;
 import com.practicum.TaskManager.model.Status;
 import com.practicum.TaskManager.model.Subtask;
 import com.practicum.TaskManager.model.Task;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -12,16 +13,23 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class HistoryManagerTest {
     HistoryManager historyManager;
+    Task task;
+    Epic epic;
+    Subtask subtask;
 
-    @Test
-    void addAndGetHistory() {
+    @BeforeEach
+    void createHistory() {
         historyManager = Managers.getDefaultHistory();
-        Task task = new Task("Random name", "...", Status.DONE);
-        Epic epic = new Epic("Random name2", "...");
-        Subtask subtask = new Subtask("Random name3", "...", Status.DONE, 123);
+        task = new Task("Random name", "...", Status.DONE);
+        epic = new Epic("Random name2", "...");
+        subtask = new Subtask("Random name3", "...", Status.DONE, 123);
         historyManager.add(task);
         historyManager.add(epic);
         historyManager.add(subtask);
+    }
+
+    @Test
+    void addAndGetHistory() {
         List<Task> history = historyManager.getHistory();
 
         assertEquals(3, history.size());
@@ -29,16 +37,11 @@ class HistoryManagerTest {
     }
 
     @Test
-    void shouldBeNoMore10Objects() {
-        historyManager = Managers.getDefaultHistory();
-
-        for (int i = 0; i < 20; i++) {
-            Task task = new Task("Random name" + i, "...", Status.DONE);
-            historyManager.add(task);
-        }
-
+    void remove() {
+        historyManager.remove(epic.getId());
         List<Task> history = historyManager.getHistory();
 
-        assertEquals(10, history.size());
+        assertEquals(2, history.size());
+        assertFalse(history.contains(epic));
     }
 }

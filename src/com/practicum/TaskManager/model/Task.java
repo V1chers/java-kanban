@@ -3,9 +3,9 @@ package com.practicum.TaskManager.model;
 import java.util.Objects;
 
 public class Task {
-    final private String name;
-    final private String description;
-    final private int id;
+    private final String name;
+    private final String description;
+    private final int id;
     private Status status;
 
     public Task(String name, String description, Status status) {

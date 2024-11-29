@@ -3,7 +3,7 @@ package com.practicum.TaskManager.model;
 import java.util.Objects;
 
 public class Subtask extends Task {
-    final private int epicId;
+    private final int epicId;
 
     public Subtask(String name, String description, Status status, int epicId) {
         super(name, description, status);

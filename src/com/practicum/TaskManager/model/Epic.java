@@ -7,7 +7,7 @@ import java.util.*;
    генерируемое для Epic в hashCode, тоже. */
 
 public class Epic extends Task {
-    final private Map<Integer, Subtask> subtasks;
+    private final Map<Integer, Subtask> subtasks;
 
     public Epic(String name, String description) {
         super(name, description, Status.NEW);

@@ -50,7 +50,7 @@ public class Main {
         System.out.println(taskById);
         Epic epicById = taskManager.getEpicById(1007592185);
         System.out.println(epicById);
-        Subtask subtaskById = taskManager.getSubtaskById(-1736589052);
+        Subtask subtaskById = taskManager.getSubtaskById(2000315197);
         System.out.println(subtaskById);
         System.out.println();
 
@@ -115,5 +115,59 @@ public class Main {
         System.out.println(epics);
         subtasks = taskManager.getSubtasks();
         System.out.println(subtasks);
+        System.out.println();
+
+        System.out.println("Дополнительное задание шестого спринта:");
+
+        TaskManager newTaskManager = Managers.getDefault();
+
+        Epic epicWithSubtasks = new Epic("Эпик с задачами", "");
+        newTaskManager.createEpic(epicWithSubtasks);
+        Subtask epicssubtask = new Subtask("Подзадача 1", "", Status.NEW, epicWithSubtasks.getId());
+        newTaskManager.createSubtask(epicssubtask);
+        Subtask epicssubtask2 = new Subtask("Подзадача 2", "", Status.NEW, epicWithSubtasks.getId());
+        newTaskManager.createSubtask(epicssubtask2);
+        Subtask epicssubtask3 = new Subtask("Подзадача 3", "", Status.NEW, epicWithSubtasks.getId());
+        newTaskManager.createSubtask(epicssubtask3);
+
+        Epic epicWithoutSubtasks = new Epic("Эпик без задач", "");
+        newTaskManager.createEpic(epicWithoutSubtasks);
+
+        System.out.println("1. Вызываем все задачи и выводим их");
+
+        newTaskManager.getEpicById(epicWithSubtasks.getId());
+        System.out.println(newTaskManager.getHistory());
+        newTaskManager.getEpicById(epicWithoutSubtasks.getId());
+        System.out.println(newTaskManager.getHistory());
+        newTaskManager.getSubtaskById(epicssubtask.getId());
+        System.out.println(newTaskManager.getHistory());
+        newTaskManager.getSubtaskById(epicssubtask2.getId());
+        System.out.println(newTaskManager.getHistory());
+        newTaskManager.getSubtaskById(epicssubtask3.getId());
+        System.out.println(newTaskManager.getHistory());
+        System.out.println();
+
+        System.out.println("2. Пробуем вызывать задачи повторно");
+
+        newTaskManager.getEpicById(epicWithoutSubtasks.getId());
+        System.out.println(newTaskManager.getHistory());
+        newTaskManager.getSubtaskById(epicssubtask2.getId());
+        System.out.println(newTaskManager.getHistory());
+        newTaskManager.getEpicById(epicWithSubtasks.getId());
+        System.out.println(newTaskManager.getHistory());
+        newTaskManager.getEpicById(epicWithoutSubtasks.getId());
+        System.out.println(newTaskManager.getHistory());
+        System.out.println();
+
+        System.out.println("3. Пробуем удалить эпик без задач");
+
+        newTaskManager.removeEpicById(epicWithoutSubtasks.getId());
+        System.out.println(newTaskManager.getHistory());
+        System.out.println();
+
+        System.out.println("4. Пробуем удалить эпик c подзадачами");
+
+        newTaskManager.removeEpicById(epicWithSubtasks.getId());
+        System.out.println(newTaskManager.getHistory());
     }
 }
