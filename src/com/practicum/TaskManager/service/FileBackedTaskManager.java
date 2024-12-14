@@ -5,6 +5,7 @@ import com.practicum.TaskManager.model.*;
 import java.io.FileWriter;
 import java.io.Writer;
 import java.nio.file.*;
+import java.util.Arrays;
 
 public class FileBackedTaskManager extends InMemoryTaskManager implements TaskManager {
     private final Path savedData;
@@ -13,10 +14,15 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         super();
         this.savedData = savedData;
 
-        loadFromFile(savedData);
+        try {
+            loadFromFile(savedData);
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
     }
 
-    private void loadFromFile(Path file) {
+    private void loadFromFile(Path file) throws ManagerSaveException {
         try {
             String[] data = Files.readString(file).split("\n");
 
@@ -41,16 +47,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
 
             }
         } catch (java.io.IOException e) {
-            try {
-                //По аналогии с ошибкой в сохранении
-                throw new ManagerLoadException();
-            } catch (ManagerLoadException exc) {
-                System.out.println(exc.getMessage());
-            }
+            throw new ManagerSaveException("Ошибка при загрузке файла", e);
         }
     }
 
-    private void save() {
+    private void save() throws ManagerSaveException {
         try (Writer FileWriter = new FileWriter(savedData.toString())) {
             FileWriter.write("type,name,description,status,epicId\n");
             for (Task task : getTasks()) {
@@ -63,12 +64,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
                 FileWriter.write(subtaskToString(subtask) + "\n");
             }
         } catch (java.io.IOException e) {
-            //Думаю не совсем понял задание в этом месте
-            try {
-                throw new ManagerSaveException();
-            } catch (ManagerSaveException exc) {
-                System.out.println(exc.getMessage());
-            }
+            throw new ManagerSaveException("Ошибка при сохранении данных", e);
         }
     }
 
@@ -85,87 +81,105 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
                 + subtask.getStatus() + "," + subtask.getEpicId();
     }
 
-    private Task taskFromString(String[] data) {
+    private Task taskFromString(String[] data) throws IllegalArgumentException {
+        if (data.length < 4) {
+            throw new IllegalArgumentException("Некорректный формат строки: " + Arrays.toString(data));
+        }
         return new Task(data[1], data[2], Status.valueOf(data[3]));
     }
 
-    private Epic epicFromString(String[] data) {
+    private Epic epicFromString(String[] data) throws IllegalArgumentException {
+        if (data.length < 3) {
+            throw new IllegalArgumentException("Некорректный формат строки: " + Arrays.toString(data));
+        }
         return new Epic(data[1], data[2]);
     }
 
-    private Subtask subtaskFromString(String[] data) {
+    private Subtask subtaskFromString(String[] data) throws IllegalArgumentException {
+        if (data.length < 5) {
+            throw new IllegalArgumentException("Некорректный формат строки: " + Arrays.toString(data));
+        }
         return new Subtask(data[1], data[2], Status.valueOf(data[3]), Integer.parseInt(data[4]));
     }
 
     @Override
     public void createTask(Task task) {
         super.createTask(task);
-        save();
+        tryCatchSave();
     }
 
     @Override
     public void createEpic(Epic epic) {
         super.createEpic(epic);
-        save();
+        tryCatchSave();
     }
 
     @Override
     public void createSubtask(Subtask subtask) {
         super.createSubtask(subtask);
-        save();
+        tryCatchSave();
     }
 
     @Override
     public void deleteAllTasks() {
         super.deleteAllTasks();
-        save();
+        tryCatchSave();
     }
 
     @Override
     public void deleteAllEpics() {
         super.deleteAllEpics();
-        save();
+        tryCatchSave();
     }
 
     @Override
     public void deleteAllSubtasks() {
         super.deleteAllSubtasks();
-        save();
+        tryCatchSave();
     }
 
     @Override
     public void updateTask(Task task) {
         super.updateTask(task);
-        save();
+        tryCatchSave();
     }
 
     @Override
     public void updateEpic(Epic epic) {
         super.updateEpic(epic);
-        save();
+        tryCatchSave();
     }
 
     @Override
     public void updateSubTask(Subtask subtask) {
         super.updateSubTask(subtask);
-        save();
+        tryCatchSave();
     }
 
     @Override
     public void removeTaskById(int taskId) {
         super.removeTaskById(taskId);
-        save();
+        tryCatchSave();
     }
 
     @Override
     public void removeEpicById(int epicId) {
         super.removeEpicById(epicId);
-        save();
+        tryCatchSave();
     }
 
     @Override
     public void removeSubtaskById(int subtaskId) {
         super.removeSubtaskById(subtaskId);
-        save();
+        tryCatchSave();
+    }
+
+    private void tryCatchSave() {
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
