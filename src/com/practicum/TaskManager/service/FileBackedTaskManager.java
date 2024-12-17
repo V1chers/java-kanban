@@ -92,8 +92,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
             throw new IllegalArgumentException("Некорректный формат строки: " + Arrays.toString(data));
         }
         if (!data[5].equals("null") && !data[6].equals("null")) {
-            return new Task(data[1], data[2], Status.valueOf(data[3]), Duration.ofMinutes(Integer.parseInt(data[5]))
-                    , LocalDateTime.parse(data[6]));
+            return new Task(data[1], data[2], Status.valueOf(data[3]), Duration.ofMinutes(Integer.parseInt(data[5])),
+                    LocalDateTime.parse(data[6]));
         }
         return new Task(data[1], data[2], Status.valueOf(data[3]));
     }
@@ -110,8 +110,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
             throw new IllegalArgumentException("Некорректный формат строки: " + Arrays.toString(data));
         }
         if (!data[5].equals("null") && !data[6].equals("null")) {
-            return new Subtask(data[1], data[2], Status.valueOf(data[3]), Integer.parseInt(data[4])
-                    , Duration.ofMinutes(Integer.parseInt(data[5])), LocalDateTime.parse(data[6]));
+            return new Subtask(data[1], data[2], Status.valueOf(data[3]), Integer.parseInt(data[4]),
+                    Duration.ofMinutes(Integer.parseInt(data[5])), LocalDateTime.parse(data[6]));
         }
         return new Subtask(data[1], data[2], Status.valueOf(data[3]), Integer.parseInt(data[4]));
     }
