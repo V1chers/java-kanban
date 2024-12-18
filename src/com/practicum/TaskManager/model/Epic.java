@@ -35,7 +35,14 @@ public class Epic extends Task {
     }
 
     private void updateTimeAndDuration(Subtask subtask) {
-        if (subtask.getEndTime().isEmpty()) {
+        /* В методе subtask.getEndTime() уже присутствует
+        if (startTime == null || duration == null) {
+            return Optional.empty();
+        }
+        из-за чего код
+        subtask.getEndTime().isEmpty()
+        по моему ошибку вызвать не может */
+        if (subtask.getDuration() == null || subtask.getStartTime() == null) {
             return;
         }
 
