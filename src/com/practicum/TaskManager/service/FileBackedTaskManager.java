@@ -12,15 +12,17 @@ import java.util.Arrays;
 public class FileBackedTaskManager extends InMemoryTaskManager implements TaskManager {
     private final Path savedData;
 
-    public FileBackedTaskManager(Path savedData) {
+    public FileBackedTaskManager(Path savedData, boolean isFileNew) {
         super();
         this.savedData = savedData;
 
-        try {
-            loadFromFile(savedData);
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
+        if (!isFileNew) {
+            try {
+                loadFromFile(savedData);
+            } catch (ManagerSaveException e) {
+                System.out.println(e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
 
@@ -29,7 +31,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
             String[] data = Files.readString(file).split("\n");
 
             if (!data[0].equals("type,name,description,status,epicId,duration,startTime")) {
-                return;
+                throw new ManagerSaveException();
             }
 
             for (int i = 1; i < data.length; i++) {

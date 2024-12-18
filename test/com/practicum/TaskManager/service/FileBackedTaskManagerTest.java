@@ -24,7 +24,7 @@ class FileBackedTaskManagerTest {
             System.out.println("ошибка в тесте");
         }
 
-        taskManager = new FileBackedTaskManager(tempFile);
+        taskManager = new FileBackedTaskManager(tempFile, true);
     }
 
     @Test
@@ -58,7 +58,7 @@ class FileBackedTaskManagerTest {
 
     @Test
     void loadFromFile() {
-        FileBackedTaskManager taskManager2 = new FileBackedTaskManager(tempFile);
+        FileBackedTaskManager taskManager2 = new FileBackedTaskManager(tempFile, false);
 
         assertEquals(taskManager.getTasks(), taskManager2.getTasks());
         assertEquals(taskManager.getEpics(), taskManager2.getEpics());
@@ -68,7 +68,14 @@ class FileBackedTaskManagerTest {
     @Test
     void shouldCatchException() {
         Assertions.assertDoesNotThrow(() -> {
-            new FileBackedTaskManager(Paths.get("C:\\txt.txt"));
+            new FileBackedTaskManager(Paths.get("C:\\txt.txt"), false);
+        });
+    }
+
+    @Test
+    void shouldCatchExceptionInConstruction() {
+        Assertions.assertDoesNotThrow(() -> {
+            new FileBackedTaskManager(Files.createTempFile(null, ".txt"), false);
         });
     }
 }

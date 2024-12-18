@@ -292,15 +292,14 @@ public class InMemoryTaskManager implements TaskManager {
         }
 
         return sortedTasks.stream()
-                .anyMatch(task2 -> !((((task.getStartTime().isAfter(task2.getStartTime()))
-                        == (task.getStartTime().isAfter(task2.getEndTime().get())))
-                        == ((task.getEndTime().get().isAfter(task2.getStartTime()))
-                        == (task.getEndTime().get().isAfter(task2.getEndTime().get()))))
-                        || (((task.getStartTime().isBefore(task2.getStartTime()))
-                        == (task.getStartTime().isBefore(task2.getEndTime().get())))
-                        == ((task.getEndTime().get().isBefore(task2.getStartTime()))
-                        == (task.getEndTime().get().isBefore(task2.getEndTime().get())))))
-                );
+                .anyMatch(existingTask -> !(task.getEndTime().get().isBefore(existingTask.getStartTime()) ||
+                        task.getStartTime().isAfter(existingTask.getEndTime().get()) ||
+                        // И все равно усложнил до плохо читаемого вида, что бы при соприкосновении границ отрезков
+                        // времени задача все равно создавалась
+                        task.getEndTime().get().isBefore(existingTask.getStartTime()) ==
+                        task.getEndTime().get().isAfter(existingTask.getStartTime()) ||
+                        task.getStartTime().isAfter(existingTask.getEndTime().get()) ==
+                        task.getStartTime().isBefore(existingTask.getEndTime().get())));
     }
 }
 
