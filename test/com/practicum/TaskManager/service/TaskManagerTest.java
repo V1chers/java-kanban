@@ -7,6 +7,9 @@ import com.practicum.TaskManager.model.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,15 +23,21 @@ class TaskManagerTest {
     Subtask breadSubtask;
     Epic pigeonsEpic;
     Subtask feedSubtask;
+    DateTimeFormatter dateTimeFormatter;
+    String date;
 
     @BeforeEach
     void createTaskManager() {
+        dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+        date = "12.12.2024 ";
         taskManager = Managers.getDefault();
 
-        strollTask = new Task("прогулка", "сходить погулять", Status.NEW);
+        strollTask = new Task("прогулка", "сходить погулять", Status.NEW, Duration.ofMinutes(60)
+                , LocalDateTime.parse(date + "08:00", dateTimeFormatter));
         taskManager.createTask(strollTask);
 
-        trashTask = new Task("мусор", "выкинуть мусор", Status.NEW);
+        trashTask = new Task("мусор", "выкинуть мусор", Status.NEW, Duration.ofMinutes(60)
+                , LocalDateTime.parse(date + "10:00", dateTimeFormatter));
         taskManager.createTask(trashTask);
 
 
@@ -59,6 +68,13 @@ class TaskManagerTest {
         assertEquals(2, taskManager.getTasks().size());
         assertEquals(2, taskManager.getEpics().size());
         assertEquals(3, taskManager.getSubtasks().size());
+    }
+
+    @Test
+    void shouldNotAddSubtaskWithoutCreatedEpic() {
+        Subtask subtask = new Subtask("random name", "desc", Status.NEW, 12345);
+        taskManager.createSubtask(subtask);
+        assertNull(taskManager.getSubtaskById(subtask.getId()));
     }
 
     @Test
@@ -158,6 +174,8 @@ class TaskManagerTest {
 
     @Test
     void updateEpicStatus() {
+        assertEquals(Status.NEW, productsEpic.getStatus());
+
         milkSubtask.setStatus(Status.DONE);
         taskManager.updateSubTask(milkSubtask);
 
@@ -167,6 +185,13 @@ class TaskManagerTest {
         taskManager.updateSubTask(breadSubtask);
 
         assertEquals(Status.DONE, productsEpic.getStatus());
+
+        milkSubtask.setStatus(Status.IN_PROGRESS);
+        breadSubtask.setStatus(Status.IN_PROGRESS);
+        taskManager.updateSubTask(milkSubtask);
+        taskManager.updateSubTask(breadSubtask);
+
+        assertEquals(Status.IN_PROGRESS, productsEpic.getStatus());
     }
 
     @Test
@@ -218,5 +243,57 @@ class TaskManagerTest {
         assertFalse(subtasks.contains(milkSubtask));
         assertEquals(1, productsSubtasks.size());
         assertFalse(productsSubtasks.contains(milkSubtask));
+    }
+
+    @Test
+    void getPrioritizedTasks() {
+        taskManager.createTask(new Subtask("random name", "desc", Status.NEW, strollTask.getId()
+                , Duration.ofMinutes(60), LocalDateTime.parse(date + "12:00", dateTimeFormatter)));
+
+        List<Task> sortedTasks = taskManager.getPrioritizedTasks();
+        assertTrue(sortedTasks.get(1).getEndTime().get().isBefore(sortedTasks.get(2).getStartTime()));
+    }
+
+    @Test
+    void updatePrioritizedTasks() {
+        Subtask firstTaskWithTime = new Subtask("random name", "desc", Status.NEW, productsEpic.getId()
+                , Duration.ofMinutes(60), LocalDateTime.parse(date + "12:00", dateTimeFormatter));
+        taskManager.createSubtask(firstTaskWithTime);
+        assertEquals(3, taskManager.getPrioritizedTasks().size());
+
+        Subtask secondTaskWithoutTime = new Subtask("random name2", "desc", Status.NEW, productsEpic.getId());
+        taskManager.createSubtask(secondTaskWithoutTime);
+        assertEquals(3, taskManager.getPrioritizedTasks().size());
+
+        Subtask firstTaskWithoutTime = new Subtask("random name", "desc", Status.NEW, productsEpic.getId());
+        taskManager.updateSubTask(firstTaskWithoutTime);
+        assertEquals(2, taskManager.getPrioritizedTasks().size());
+    }
+
+    @Test
+    void deletePrioritizedTasks() {
+        taskManager.removeTaskById(strollTask.getId());
+        assertEquals(taskManager.getPrioritizedTasks().size(), 1);
+    }
+
+    @Test
+    void isTasksOverlap() {
+        taskManager.createTask(new Task("random name", "desc", Status.NEW
+                , Duration.ofMinutes(60), LocalDateTime.parse(date + "14:00", dateTimeFormatter)));
+        taskManager.createTask(new Task("random name2", "desc", Status.NEW
+                , Duration.ofMinutes(60), LocalDateTime.parse(date + "13:00", dateTimeFormatter)));
+        assertEquals(4, taskManager.getPrioritizedTasks().size());
+
+        taskManager.createTask(new Task("random name3", "desc", Status.NEW
+                , Duration.ofMinutes(60), LocalDateTime.parse(date + "15:00", dateTimeFormatter)));
+        assertEquals(5, taskManager.getPrioritizedTasks().size());
+
+        taskManager.createTask(new Task("random name4", "desc", Status.NEW
+                , Duration.ofMinutes(60), LocalDateTime.parse(date + "15:59", dateTimeFormatter)));
+        assertEquals(5, taskManager.getPrioritizedTasks().size());
+
+        taskManager.createTask(new Task("random name5", "desc", Status.NEW
+                , Duration.ofMinutes(60), LocalDateTime.parse(date + "12:01", dateTimeFormatter)));
+        assertEquals(5, taskManager.getPrioritizedTasks().size());
     }
 }

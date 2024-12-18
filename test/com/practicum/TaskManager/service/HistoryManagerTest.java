@@ -29,6 +29,23 @@ class HistoryManagerTest {
     }
 
     @Test
+    void ShouldGetNullFromEmptyHistory() {
+        HistoryManager emptyHistoryManager = Managers.getDefaultHistory();
+
+        assertNull(emptyHistoryManager.getHistory());
+    }
+
+    @Test
+    void ShoulReplaceSameTask() {
+        Task sameTask = new Task("Random name", "...", Status.DONE);
+        historyManager.add(sameTask);
+        List<Task> history = historyManager.getHistory();
+
+        assertEquals(3, history.size());
+        assertEquals(sameTask, history.getLast());
+    }
+
+    @Test
     void addAndGetHistory() {
         List<Task> history = historyManager.getHistory();
 
@@ -40,8 +57,16 @@ class HistoryManagerTest {
     void remove() {
         historyManager.remove(epic.getId());
         List<Task> history = historyManager.getHistory();
-
         assertEquals(2, history.size());
         assertFalse(history.contains(epic));
+
+        historyManager.remove(subtask.getId());
+        history = historyManager.getHistory();
+        assertEquals(1, history.size());
+        assertFalse(history.contains(subtask));
+
+        historyManager.remove(task.getId());
+        history = historyManager.getHistory();
+        assertNull(history);
     }
 }
