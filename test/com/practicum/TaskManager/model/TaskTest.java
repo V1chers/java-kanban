@@ -3,6 +3,10 @@ package com.practicum.TaskManager.model;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class TaskTest {
@@ -42,5 +46,17 @@ class TaskTest {
 
     @Test
     void setStatus() {
+    }
+
+    @Test
+    void getEndTime() {
+        LocalDateTime ldt = LocalDateTime.now();
+        assertEquals(Optional.empty(), task.getEndTime());
+        task.setStartTime(ldt);
+        assertEquals(Optional.empty(), task.getEndTime());
+        task.setDuration(Duration.ofMinutes(60));
+        assertEquals(ldt.plusHours(1), task.getEndTime().get());
+        task.setStartTime(null);
+        assertEquals(Optional.empty(), task.getEndTime());
     }
 }

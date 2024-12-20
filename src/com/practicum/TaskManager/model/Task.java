@@ -1,18 +1,32 @@
 package com.practicum.TaskManager.model;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Optional;
 
 public class Task {
     private final String name;
     private final String description;
     private final int id;
     private Status status;
+    private Duration duration;
+    private LocalDateTime startTime;
 
     public Task(String name, String description, Status status) {
         this.name = name;
         this.description = description;
         this.id = hashCode();
         this.status = status;
+    }
+
+    public Task(String name, String description, Status status, Duration duration, LocalDateTime startTime) {
+        this.name = name;
+        this.description = description;
+        this.id = hashCode();
+        this.status = status;
+        this.duration = duration;
+        this.startTime = startTime;
     }
 
     @Override
@@ -56,5 +70,28 @@ public class Task {
                 ", id=" + id +
                 ", status=" + status +
                 '}';
+    }
+
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public Optional<LocalDateTime> getEndTime() {
+        if (startTime == null || duration == null) {
+            return Optional.empty();
+        }
+        return Optional.of(startTime.plus(duration));
     }
 }

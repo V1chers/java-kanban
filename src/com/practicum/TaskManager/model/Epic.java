@@ -1,13 +1,12 @@
 package com.practicum.TaskManager.model;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
-
-/* equals и hashCode вроде уже созданы были в родительском классе и унаследованы. В Subtask слегка изменил их,
-   ибо epic id финальное число, но в Epic не хочется их изменять, ибо в subtasks значения могут менятся, соотвественно и id,
-   генерируемое для Epic в hashCode, тоже. */
 
 public class Epic extends Task {
     private final Map<Integer, Subtask> subtasks;
+    private LocalDateTime endTime;
 
     public Epic(String name, String description) {
         super(name, description, Status.NEW);
@@ -16,18 +15,58 @@ public class Epic extends Task {
 
     public void addSubtask(Subtask subtask) {
         subtasks.put(subtask.getId(), subtask);
+        updateTimeAndDuration(subtask);
     }
 
     public void removeSubtask(int subtaskId) {
+        Subtask subtask = subtasks.get(subtaskId);
         subtasks.remove(subtaskId);
+        updateTimeAndDuration(subtask);
     }
 
     public void removeAllSubtasks() {
         subtasks.clear();
+        super.setDuration(null);
+        super.setStartTime(null);
     }
 
     public List<Subtask> getSubtasks() {
         return Collections.unmodifiableList(new ArrayList<>(subtasks.values()));
+    }
+
+    private void updateTimeAndDuration(Subtask subtask) {
+        /* В методе subtask.getEndTime() уже присутствует
+        if (startTime == null || duration == null) {
+            return Optional.empty();
+        }
+        из-за чего код
+        subtask.getEndTime().isEmpty()
+        по моему ошибку вызвать не может */
+        if (subtask.getDuration() == null || subtask.getStartTime() == null) {
+            return;
+        }
+
+        if (endTime == null) {
+            super.setDuration(subtask.getDuration());
+            super.setStartTime(subtask.getStartTime());
+            endTime = subtask.getEndTime().get();
+            return;
+        }
+        super.setDuration(super.getDuration().plus(subtask.getDuration()));
+        if (subtask.getStartTime().isBefore(super.getStartTime())) {
+            super.setStartTime(subtask.getStartTime());
+        }
+        if (subtask.getEndTime().get().isAfter(super.getEndTime().get())) {
+            endTime = subtask.getEndTime().get();
+        }
+    }
+
+    @Override
+    public void setStartTime(LocalDateTime startTime) {
+    }
+
+    @Override
+    public void setDuration(Duration duration) {
     }
 
     @Override

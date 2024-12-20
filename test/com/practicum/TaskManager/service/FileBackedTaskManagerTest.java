@@ -1,14 +1,14 @@
 package com.practicum.TaskManager.service;
 
-import com.practicum.TaskManager.model.Epic;
-import com.practicum.TaskManager.model.Status;
-import com.practicum.TaskManager.model.Subtask;
-import com.practicum.TaskManager.model.Task;
+import com.practicum.TaskManager.model.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,18 +24,20 @@ class FileBackedTaskManagerTest {
             System.out.println("ошибка в тесте");
         }
 
-        taskManager = new FileBackedTaskManager(tempFile);
+        taskManager = new FileBackedTaskManager(tempFile, true);
     }
 
     @Test
     void save() {
-        Task strollTask = new Task("прогулка", "сходить погулять", Status.NEW);
+        Task strollTask = new Task("прогулка", "сходить погулять", Status.NEW, Duration.ofMinutes(60)
+                , LocalDateTime.now());
         taskManager.createTask(strollTask);
         Task trashTask = new Task("мусор", "выкинуть мусор", Status.NEW);
         taskManager.createTask(trashTask);
         Epic productsEpic = new Epic("купить продукты", "сходить в ближайший магазин во время прогулки");
         taskManager.createEpic(productsEpic);
-        Subtask milkSubtask = new Subtask("купить молоко", "", Status.NEW, productsEpic.getId());
+        Subtask milkSubtask = new Subtask("купить молоко", "", Status.NEW, productsEpic.getId()
+                , Duration.ofMinutes(60), LocalDateTime.now().plusHours(2));
         taskManager.createSubtask(milkSubtask);
         Subtask breadSubtask = new Subtask("купить хлеб", "", Status.NEW, productsEpic.getId());
         taskManager.createSubtask(breadSubtask);
@@ -56,10 +58,24 @@ class FileBackedTaskManagerTest {
 
     @Test
     void loadFromFile() {
-        FileBackedTaskManager taskManager2 = new FileBackedTaskManager(tempFile);
+        FileBackedTaskManager taskManager2 = new FileBackedTaskManager(tempFile, false);
 
         assertEquals(taskManager.getTasks(), taskManager2.getTasks());
         assertEquals(taskManager.getEpics(), taskManager2.getEpics());
         assertEquals(taskManager.getSubtasks(), taskManager2.getSubtasks());
+    }
+
+    @Test
+    void shouldCatchException() {
+        Assertions.assertDoesNotThrow(() -> {
+            new FileBackedTaskManager(Paths.get("C:\\txt.txt"), false);
+        });
+    }
+
+    @Test
+    void shouldCatchExceptionInConstruction() {
+        Assertions.assertDoesNotThrow(() -> {
+            new FileBackedTaskManager(Files.createTempFile(null, ".txt"), false);
+        });
     }
 }

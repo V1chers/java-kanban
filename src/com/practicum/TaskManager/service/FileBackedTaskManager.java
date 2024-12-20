@@ -5,20 +5,24 @@ import com.practicum.TaskManager.model.*;
 import java.io.FileWriter;
 import java.io.Writer;
 import java.nio.file.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 
 public class FileBackedTaskManager extends InMemoryTaskManager implements TaskManager {
     private final Path savedData;
 
-    public FileBackedTaskManager(Path savedData) {
+    public FileBackedTaskManager(Path savedData, boolean isFileNew) {
         super();
         this.savedData = savedData;
 
-        try {
-            loadFromFile(savedData);
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
+        if (!isFileNew) {
+            try {
+                loadFromFile(savedData);
+            } catch (ManagerSaveException e) {
+                System.out.println(e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
 
@@ -26,8 +30,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         try {
             String[] data = Files.readString(file).split("\n");
 
-            if (!data[0].equals("type,name,description,status,epicId")) {
-                return;
+            if (!data[0].equals("type,name,description,status,epicId,duration,startTime")) {
+                throw new ManagerSaveException();
             }
 
             for (int i = 1; i < data.length; i++) {
@@ -53,7 +57,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
 
     private void save() throws ManagerSaveException {
         try (Writer FileWriter = new FileWriter(savedData.toString())) {
-            FileWriter.write("type,name,description,status,epicId\n");
+            FileWriter.write("type,name,description,status,epicId,duration,startTime\n");
             for (Task task : getTasks()) {
                 FileWriter.write(taskToString(task) + "\n");
             }
@@ -69,7 +73,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
     }
 
     private String taskToString(Task task) {
-        return TaskTypes.TASK + "," + task.getName() + "," + task.getDescription() + "," + task.getStatus() + ",";
+        Long duration = task.getDuration() == null ? null : task.getDuration().toMinutes();
+        return TaskTypes.TASK + "," + task.getName() + "," + task.getDescription() + "," + task.getStatus() + ",,"
+                + duration + "," + task.getStartTime();
     }
 
     private String epicToString(Epic epic) {
@@ -77,13 +83,19 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
     }
 
     private String subtaskToString(Subtask subtask) {
+        Long duration = subtask.getDuration() == null ? null : subtask.getDuration().toMinutes();
         return TaskTypes.SUBTASK + "," + subtask.getName() + "," + subtask.getDescription() + ","
-                + subtask.getStatus() + "," + subtask.getEpicId();
+                + subtask.getStatus() + "," + subtask.getEpicId() + "," + duration + ","
+                + subtask.getStartTime();
     }
 
     private Task taskFromString(String[] data) throws IllegalArgumentException {
-        if (data.length < 4) {
+        if (data.length < 7) {
             throw new IllegalArgumentException("Некорректный формат строки: " + Arrays.toString(data));
+        }
+        if (!data[5].equals("null") && !data[6].equals("null")) {
+            return new Task(data[1], data[2], Status.valueOf(data[3]), Duration.ofMinutes(Integer.parseInt(data[5])),
+                    LocalDateTime.parse(data[6]));
         }
         return new Task(data[1], data[2], Status.valueOf(data[3]));
     }
@@ -96,8 +108,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
     }
 
     private Subtask subtaskFromString(String[] data) throws IllegalArgumentException {
-        if (data.length < 5) {
+        if (data.length < 7) {
             throw new IllegalArgumentException("Некорректный формат строки: " + Arrays.toString(data));
+        }
+        if (!data[5].equals("null") && !data[6].equals("null")) {
+            return new Subtask(data[1], data[2], Status.valueOf(data[3]), Integer.parseInt(data[4]),
+                    Duration.ofMinutes(Integer.parseInt(data[5])), LocalDateTime.parse(data[6]));
         }
         return new Subtask(data[1], data[2], Status.valueOf(data[3]), Integer.parseInt(data[4]));
     }
