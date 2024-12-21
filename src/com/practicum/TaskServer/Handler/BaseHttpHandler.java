@@ -15,8 +15,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-abstract public class BaseHttpHandler implements HttpHandler {
-    abstract public void handle(HttpExchange exchange) throws IOException;
+public abstract class BaseHttpHandler implements HttpHandler {
+    public abstract void handle(HttpExchange exchange) throws IOException;
 
     protected void sendText(HttpExchange h, String text) throws IOException {
         byte[] resp = text.getBytes(StandardCharsets.UTF_8);
