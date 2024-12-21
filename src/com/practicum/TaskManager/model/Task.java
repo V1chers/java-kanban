@@ -29,6 +29,15 @@ public class Task {
         this.startTime = startTime;
     }
 
+    public Task(Task task) {
+        this.name = task.getName();
+        this.description = task.getDescription();
+        this.id = hashCode();
+        this.status = task.getStatus();
+        this.duration = task.getDuration();
+        this.startTime = task.getStartTime();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

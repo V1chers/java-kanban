@@ -1,9 +1,6 @@
 package com.practicum.TaskManager.service;
 
-import com.practicum.TaskManager.model.Epic;
-import com.practicum.TaskManager.model.Status;
-import com.practicum.TaskManager.model.Subtask;
-import com.practicum.TaskManager.model.Task;
+import com.practicum.TaskManager.model.*;
 
 import java.util.*;
 
@@ -30,10 +27,10 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void createTask(Task task) {
         if (tasks.containsKey(task.getId())) {
-            return;
+            throw new NotAcceptableException();
         }
         if (isTasksOverlap(task)) {
-            return;
+            throw new NotAcceptableException();
         }
 
         tasks.put(task.getId(), task);
@@ -43,21 +40,25 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void createEpic(Epic epic) {
         if (epics.containsKey(epic.getId())) {
-            return;
+            throw new NotAcceptableException();
         }
         epics.put(epic.getId(), epic);
+
+        epic.getSubtasks().forEach(subtask -> subtasks.put(subtask.getId(), subtask));
+
+        updateEpicStatus(epic);
     }
 
     @Override
     public void createSubtask(Subtask subtask) {
         if (subtasks.containsKey(subtask.getId())) {
-            return;
+            throw new NotAcceptableException();
         }
         if (isTasksOverlap(subtask)) {
-            return;
+            throw new NotAcceptableException();
         }
         if (!epics.containsKey(subtask.getEpicId())) {
-            return;
+            throw new NotFoundException();
         }
 
         int epicId = subtask.getEpicId();
@@ -115,6 +116,9 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Task getTaskById(int taskId) {
         Task task = tasks.get(taskId);
+        if (task == null) {
+            throw new NotFoundException();
+        }
         history.add(task);
         return task;
     }
@@ -122,6 +126,9 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Epic getEpicById(int epicId) {
         Epic epic = epics.get(epicId);
+        if (epic == null) {
+            throw new NotFoundException();
+        }
         history.add(epic);
         return epic;
     }
@@ -129,6 +136,9 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Subtask getSubtaskById(int subtaskId) {
         Subtask subtask = subtasks.get(subtaskId);
+        if (subtask == null) {
+            throw new NotFoundException();
+        }
         history.add(subtask);
         return subtask;
     }
@@ -136,7 +146,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateTask(Task task) {
         if (isTasksOverlap(task)) {
-            return;
+            throw new NotAcceptableException();
         }
 
         tasks.put(task.getId(), task);
@@ -194,13 +204,18 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateSubTask(Subtask subtask) {
         if (isTasksOverlap(subtask)) {
-            return;
+            throw new NotAcceptableException();
         }
 
         Subtask thisSubtask = subtasks.get(subtask.getId());
 
-        if (thisSubtask.getEpicId() != subtask.getEpicId()) {
+        if (thisSubtask == null) {
+            createSubtask(subtask);
             return;
+        }
+
+        if (thisSubtask.getEpicId() != subtask.getEpicId()) {
+            throw new NotAcceptableException();
         }
 
         int epicId = subtask.getEpicId();
@@ -252,6 +267,10 @@ public class InMemoryTaskManager implements TaskManager {
     public List<Subtask> getSubtasksOfEpic(int epicId) {
         Epic epic = epics.get(epicId);
 
+        if (epic == null) {
+            throw new NotFoundException();
+        }
+
         return epic.getSubtasks();
     }
 
@@ -297,9 +316,9 @@ public class InMemoryTaskManager implements TaskManager {
                         // И все равно усложнил до плохо читаемого вида, что бы при соприкосновении границ отрезков
                         // времени задача все равно создавалась
                         task.getEndTime().get().isBefore(existingTask.getStartTime()) ==
-                        task.getEndTime().get().isAfter(existingTask.getStartTime()) ||
+                                task.getEndTime().get().isAfter(existingTask.getStartTime()) ||
                         task.getStartTime().isAfter(existingTask.getEndTime().get()) ==
-                        task.getStartTime().isBefore(existingTask.getEndTime().get())));
+                                task.getStartTime().isBefore(existingTask.getEndTime().get())));
     }
 }
 
