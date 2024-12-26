@@ -1,7 +1,8 @@
 package com.practicum.TaskServer.Handler;
 
 import com.google.gson.Gson;
-import com.practicum.TaskManager.model.NotAcceptableException;
+import com.google.gson.JsonSyntaxException;
+import com.practicum.TaskManager.model.ConflictException;
 import com.practicum.TaskManager.model.NotFoundException;
 import com.practicum.TaskManager.model.Task;
 import com.practicum.TaskManager.service.TaskManager;
@@ -9,6 +10,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
+import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
 public class TaskHandler extends BaseHttpHandler implements HttpHandler {
@@ -39,16 +41,18 @@ public class TaskHandler extends BaseHttpHandler implements HttpHandler {
                     if (taskId.isPresent()) {
                         deleteTask(exchange, taskId.get());
                     } else {
-                        sendNotFound(exchange);
+                        sendBadRequest(exchange);
                     }
                     break;
                 default:
-                    sendNotFound(exchange);
+                    sendBadRequest(exchange);
             }
         } catch (NotFoundException e) {
             sendNotFound(exchange);
-        } catch (NotAcceptableException e) {
+        } catch (ConflictException e) {
             sendHasInteractions(exchange);
+        } catch (DateTimeParseException | NumberFormatException e) {
+            sendBadRequest(exchange);
         }
     }
 
@@ -67,15 +71,23 @@ public class TaskHandler extends BaseHttpHandler implements HttpHandler {
     }
 
     private void postTask(HttpExchange exchange) throws java.io.IOException {
-        String jsonTask = getStringFromBody(exchange);
-        Gson gson = buildGson();
-        Task task = gson.fromJson(jsonTask, Task.class);
-        if (task.getId() == 0) {
-            taskManager.createTask(new Task(task));
-        } else {
-            taskManager.updateTask(new Task(task));
+        try {
+            String jsonTask = getStringFromBody(exchange);
+            Gson gson = buildGson();
+            Task task = gson.fromJson(jsonTask, Task.class);
+            if (task.getName().isBlank() || task.getStatus() == null) {
+                sendBadRequest(exchange);
+                return;
+            }
+            if (task.getId() == 0) {
+                taskManager.createTask(new Task(task));
+            } else {
+                taskManager.updateTask(new Task(task));
+            }
+            sendSuccess(exchange);
+        } catch (JsonSyntaxException e) {
+            sendBadRequest(exchange);
         }
-        sendSuccess(exchange);
     }
 
     private void deleteTask(HttpExchange exchange, int id) throws java.io.IOException {

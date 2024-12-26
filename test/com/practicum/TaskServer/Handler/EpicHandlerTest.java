@@ -159,7 +159,7 @@ public class EpicHandlerTest {
                 .uri(URI.create("http://localhost:8080/epics"))
                 .build();
         response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        assertEquals(406, response.statusCode());
+        assertEquals(409, response.statusCode());
 
         Epic epicWithId = new Epic("покормить голубей", "покормить голубей купленным в магазине хлебом");
         Subtask subtask = new Subtask("раскрошить хлеб", "что бы голуби смогли его съесть",
@@ -180,7 +180,7 @@ public class EpicHandlerTest {
         gsonEpic = "{\n" +
                 "\t\"subtasks\": {\n" +
                 "\t\t\"529943644\": {\n" +
-                "\t\t\t\"epicId\": 420705434,\n" +
+                "\t\t\t\"epicId\": " + subtask.getEpicId() + ",\n" +
                 "\t\t\t\"name\": \"RandomName\",\n" +
                 "\t\t\t\"description\": \"123\",\n" +
                 "\t\t\t\"status\": \"NEW\"\n" +

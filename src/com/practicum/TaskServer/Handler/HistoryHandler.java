@@ -23,7 +23,7 @@ public class HistoryHandler extends BaseHttpHandler implements HttpHandler {
                 getHistory(exchange);
                 break;
             default:
-                sendNotFound(exchange);
+                sendBadRequest(exchange);
         }
     }
 

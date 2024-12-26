@@ -1,7 +1,8 @@
 package com.practicum.TaskServer.Handler;
 
 import com.google.gson.Gson;
-import com.practicum.TaskManager.model.NotAcceptableException;
+import com.google.gson.JsonSyntaxException;
+import com.practicum.TaskManager.model.ConflictException;
 import com.practicum.TaskManager.model.NotFoundException;
 import com.practicum.TaskManager.model.Subtask;
 import com.practicum.TaskManager.service.TaskManager;
@@ -9,6 +10,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
+import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
 public class SubtaskHandler extends BaseHttpHandler implements HttpHandler {
@@ -39,16 +41,18 @@ public class SubtaskHandler extends BaseHttpHandler implements HttpHandler {
                     if (subtaskId.isPresent()) {
                         deleteSubtask(exchange, subtaskId.get());
                     } else {
-                        sendNotFound(exchange);
+                        sendBadRequest(exchange);
                     }
                     break;
                 default:
-                    sendNotFound(exchange);
+                    sendBadRequest(exchange);
             }
         } catch (NotFoundException e) {
             sendNotFound(exchange);
-        } catch (NotAcceptableException e) {
+        } catch (ConflictException e) {
             sendHasInteractions(exchange);
+        } catch (DateTimeParseException | NumberFormatException e) {
+            sendBadRequest(exchange);
         }
     }
 
@@ -67,15 +71,23 @@ public class SubtaskHandler extends BaseHttpHandler implements HttpHandler {
     }
 
     private void postSubtask(HttpExchange exchange) throws java.io.IOException {
-        String jsonSubtask = getStringFromBody(exchange);
-        Gson gson = buildGson();
-        Subtask subtask = gson.fromJson(jsonSubtask, Subtask.class);
-        if (subtask.getId() == 0) {
-            taskManager.createSubtask(new Subtask(subtask));
-        } else {
-            taskManager.updateSubTask(new Subtask(subtask));
+        try {
+            String jsonSubtask = getStringFromBody(exchange);
+            Gson gson = buildGson();
+            Subtask subtask = gson.fromJson(jsonSubtask, Subtask.class);
+            if (subtask.getName().isBlank() || subtask.getStatus() == null) {
+                sendBadRequest(exchange);
+                return;
+            }
+            if (subtask.getId() == 0) {
+                taskManager.createSubtask(new Subtask(subtask));
+            } else {
+                taskManager.updateSubTask(new Subtask(subtask));
+            }
+            sendSuccess(exchange);
+        } catch (JsonSyntaxException e) {
+            sendBadRequest(exchange);
         }
-        sendSuccess(exchange);
     }
 
     private void deleteSubtask(HttpExchange exchange, int id) throws java.io.IOException {

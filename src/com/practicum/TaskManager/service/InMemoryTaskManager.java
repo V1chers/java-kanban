@@ -27,10 +27,10 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void createTask(Task task) {
         if (tasks.containsKey(task.getId())) {
-            throw new NotAcceptableException();
+            throw new ConflictException();
         }
         if (isTasksOverlap(task)) {
-            throw new NotAcceptableException();
+            throw new ConflictException();
         }
 
         tasks.put(task.getId(), task);
@@ -40,8 +40,15 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void createEpic(Epic epic) {
         if (epics.containsKey(epic.getId())) {
-            throw new NotAcceptableException();
+            throw new ConflictException();
         }
+        Optional<Subtask> wrongSubtaskEpicsId = epic.getSubtasks().stream()
+                .filter(subtask -> subtask.getEpicId() != epic.getId())
+                .findFirst();
+        if (wrongSubtaskEpicsId.isPresent()) {
+            throw new ConflictException();
+        }
+
         epics.put(epic.getId(), epic);
 
         epic.getSubtasks().forEach(subtask -> subtasks.put(subtask.getId(), subtask));
@@ -52,10 +59,10 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void createSubtask(Subtask subtask) {
         if (subtasks.containsKey(subtask.getId())) {
-            throw new NotAcceptableException();
+            throw new ConflictException();
         }
         if (isTasksOverlap(subtask)) {
-            throw new NotAcceptableException();
+            throw new ConflictException();
         }
         if (!epics.containsKey(subtask.getEpicId())) {
             throw new NotFoundException();
@@ -146,7 +153,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateTask(Task task) {
         if (isTasksOverlap(task)) {
-            throw new NotAcceptableException();
+            throw new ConflictException();
         }
 
         tasks.put(task.getId(), task);
@@ -185,6 +192,13 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateEpic(Epic epic) {
+        Optional<Subtask> wrongSubtaskEpicsId = epic.getSubtasks().stream()
+                .filter(subtask -> subtask.getEpicId() != epic.getId())
+                .findFirst();
+        if (wrongSubtaskEpicsId.isPresent()) {
+            throw new ConflictException();
+        }
+
         epics.put(epic.getId(), epic);
 
         epic.getSubtasks().forEach(subtask -> subtasks.put(subtask.getId(), subtask));
@@ -204,7 +218,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateSubTask(Subtask subtask) {
         if (isTasksOverlap(subtask)) {
-            throw new NotAcceptableException();
+            throw new ConflictException();
         }
 
         Subtask thisSubtask = subtasks.get(subtask.getId());
@@ -215,7 +229,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
 
         if (thisSubtask.getEpicId() != subtask.getEpicId()) {
-            throw new NotAcceptableException();
+            throw new ConflictException();
         }
 
         int epicId = subtask.getEpicId();
@@ -228,6 +242,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void removeTaskById(int taskId) {
+        if (tasks.get(taskId) == null) {
+            return;
+        }
+
         history.remove(taskId);
         deletePrioritizedTasks(tasks.get(taskId));
         tasks.remove(taskId);
@@ -235,6 +253,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void removeEpicById(int epicId) {
+        if (epics.get(epicId) == null) {
+            return;
+        }
+
         history.remove(epicId);
         epics.remove(epicId);
         ArrayList<Integer> subtasksToRemove = new ArrayList<>();
@@ -249,6 +271,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void removeSubtaskById(int subtaskId) {
+        if (subtasks.get(subtaskId) == null) {
+            return;
+        }
+
         Subtask subtask = getSubtaskById(subtaskId);
 
         history.remove(subtaskId);

@@ -116,7 +116,7 @@ public class TaskHandlerTest {
                 .uri(URI.create("http://localhost:8080/tasks"))
                 .build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        assertEquals(406, response.statusCode());
+        assertEquals(409, response.statusCode());
 
         gsonTask = "{\n" +
                 "\t\"name\": \"прогулка\",\n" +
@@ -130,7 +130,7 @@ public class TaskHandlerTest {
                 .uri(URI.create("http://localhost:8080/tasks"))
                 .build();
         response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        assertEquals(406, response.statusCode());
+        assertEquals(409, response.statusCode());
 
         Task task = new Task("мусор", "выкинуть мусор", Status.NEW, Duration.ofMinutes(60)
                 , LocalDateTime.parse(date + "18:00", dateTimeFormatter));

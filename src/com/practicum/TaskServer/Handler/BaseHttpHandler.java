@@ -37,7 +37,12 @@ public abstract class BaseHttpHandler implements HttpHandler {
     }
 
     protected void sendHasInteractions(HttpExchange h) throws IOException {
-        h.sendResponseHeaders(406, 0);
+        h.sendResponseHeaders(409, 0);
+        h.close();
+    }
+
+    protected void sendBadRequest(HttpExchange h) throws IOException {
+        h.sendResponseHeaders(400, 0);
         h.close();
     }
 

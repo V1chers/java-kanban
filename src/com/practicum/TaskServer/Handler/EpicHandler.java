@@ -1,14 +1,16 @@
 package com.practicum.TaskServer.Handler;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.practicum.TaskManager.model.Epic;
-import com.practicum.TaskManager.model.NotAcceptableException;
+import com.practicum.TaskManager.model.ConflictException;
 import com.practicum.TaskManager.model.NotFoundException;
 import com.practicum.TaskManager.service.TaskManager;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
+import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
 public class EpicHandler extends BaseHttpHandler implements HttpHandler {
@@ -47,16 +49,18 @@ public class EpicHandler extends BaseHttpHandler implements HttpHandler {
                     if (epicId.isPresent()) {
                         deleteEpic(exchange, epicId.get());
                     } else {
-                        sendNotFound(exchange);
+                        sendBadRequest(exchange);
                     }
                     break;
                 default:
-                    sendNotFound(exchange);
+                    sendBadRequest(exchange);
             }
         } catch (NotFoundException e) {
             sendNotFound(exchange);
-        } catch (NotAcceptableException e) {
+        } catch (ConflictException e) {
             sendHasInteractions(exchange);
+        } catch (DateTimeParseException | NumberFormatException e) {
+            sendBadRequest(exchange);
         }
     }
 
@@ -82,15 +86,23 @@ public class EpicHandler extends BaseHttpHandler implements HttpHandler {
     }
 
     private void postEpic(HttpExchange exchange) throws java.io.IOException {
-        String jsonEpic = getStringFromBody(exchange);
-        Gson gson = buildGson();
-        Epic epic = gson.fromJson(jsonEpic, Epic.class);
-        if (epic.getId() == 0) {
-            taskManager.createEpic(new Epic(epic));
-        } else {
-            taskManager.updateEpic(new Epic(epic));
+        try {
+            String jsonEpic = getStringFromBody(exchange);
+            Gson gson = buildGson();
+            Epic epic = gson.fromJson(jsonEpic, Epic.class);
+            if (epic.getName().isBlank() || epic.getStatus() == null) {
+                sendBadRequest(exchange);
+                return;
+            }
+            if (epic.getId() == 0) {
+                taskManager.createEpic(new Epic(epic));
+            } else {
+                taskManager.updateEpic(new Epic(epic));
+            }
+            sendSuccess(exchange);
+        } catch (JsonSyntaxException e) {
+            sendBadRequest(exchange);
         }
-        sendSuccess(exchange);
     }
 
     private void deleteEpic(HttpExchange exchange, int id) throws java.io.IOException {

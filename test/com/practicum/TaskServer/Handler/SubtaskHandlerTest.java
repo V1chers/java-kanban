@@ -126,7 +126,7 @@ public class SubtaskHandlerTest {
                 .uri(URI.create("http://localhost:8080/subtasks"))
                 .build();
         response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        assertEquals(406, response.statusCode());
+        assertEquals(409, response.statusCode());
 
         Subtask subtaskWithoutEpic = new Subtask("subtaskWithoutEpic", "", Status.NEW, 1234);
         gsonSubtask = gson.toJson(subtaskWithoutEpic);

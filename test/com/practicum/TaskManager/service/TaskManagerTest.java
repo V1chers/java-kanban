@@ -59,9 +59,9 @@ class TaskManagerTest {
         Epic sameProductsEpic = new Epic("купить продукты", "сходить в ближайший магазин во время прогулки");
         Subtask sameMilkSubtask = new Subtask("купить молоко", "", Status.NEW, productsEpic.getId());
 
-        Assertions.assertThrows(NotAcceptableException.class, () -> taskManager.createTask(sameStrollTask));
-        Assertions.assertThrows(NotAcceptableException.class, () -> taskManager.createEpic(sameProductsEpic));
-        Assertions.assertThrows(NotAcceptableException.class, () -> taskManager.createSubtask(sameMilkSubtask));
+        Assertions.assertThrows(ConflictException.class, () -> taskManager.createTask(sameStrollTask));
+        Assertions.assertThrows(ConflictException.class, () -> taskManager.createEpic(sameProductsEpic));
+        Assertions.assertThrows(ConflictException.class, () -> taskManager.createSubtask(sameMilkSubtask));
 
         assertEquals(2, taskManager.getTasks().size());
         assertEquals(2, taskManager.getEpics().size());
@@ -198,7 +198,7 @@ class TaskManagerTest {
         Subtask newMilkSubtask = new Subtask("купить молоко", "", Status.DONE, 123);
         Subtask newBreadSubtask = new Subtask("купить хлеб", "", Status.DONE, productsEpic.getId());
 
-        Assertions.assertThrows(NotAcceptableException.class, () ->
+        Assertions.assertThrows(ConflictException.class, () ->
             taskManager.updateSubTask(newMilkSubtask));
         taskManager.updateSubTask(newBreadSubtask);
 
@@ -288,12 +288,12 @@ class TaskManagerTest {
                 , Duration.ofMinutes(60), LocalDateTime.parse(date + "15:00", dateTimeFormatter)));
         assertEquals(5, taskManager.getPrioritizedTasks().size());
 
-        Assertions.assertThrows(NotAcceptableException.class, () ->
+        Assertions.assertThrows(ConflictException.class, () ->
             taskManager.createTask(new Task("random name4", "desc", Status.NEW
                     , Duration.ofMinutes(60), LocalDateTime.parse(date + "15:59", dateTimeFormatter))));
         assertEquals(5, taskManager.getPrioritizedTasks().size());
 
-        Assertions.assertThrows(NotAcceptableException.class, () ->
+        Assertions.assertThrows(ConflictException.class, () ->
             taskManager.createTask(new Task("random name5", "desc", Status.NEW
                     , Duration.ofMinutes(60), LocalDateTime.parse(date + "12:01", dateTimeFormatter))));
         assertEquals(5, taskManager.getPrioritizedTasks().size());
