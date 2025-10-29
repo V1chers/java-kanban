@@ -13,6 +13,13 @@ public class Epic extends Task {
         subtasks = new HashMap<>();
     }
 
+    public Epic(Epic epic) {
+        super(epic.getName(), epic.getDescription(), Status.NEW);
+
+        subtasks = new HashMap<>();
+        epic.getSubtasks().forEach(subtask -> this.addSubtask(new Subtask(subtask)));
+    }
+
     public void addSubtask(Subtask subtask) {
         subtasks.put(subtask.getId(), subtask);
         updateTimeAndDuration(subtask);

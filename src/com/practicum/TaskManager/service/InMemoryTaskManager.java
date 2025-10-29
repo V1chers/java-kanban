@@ -1,9 +1,6 @@
 package com.practicum.TaskManager.service;
 
-import com.practicum.TaskManager.model.Epic;
-import com.practicum.TaskManager.model.Status;
-import com.practicum.TaskManager.model.Subtask;
-import com.practicum.TaskManager.model.Task;
+import com.practicum.TaskManager.model.*;
 
 import java.util.*;
 
@@ -30,10 +27,10 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void createTask(Task task) {
         if (tasks.containsKey(task.getId())) {
-            return;
+            throw new ConflictException();
         }
         if (isTasksOverlap(task)) {
-            return;
+            throw new ConflictException();
         }
 
         tasks.put(task.getId(), task);
@@ -43,21 +40,32 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void createEpic(Epic epic) {
         if (epics.containsKey(epic.getId())) {
-            return;
+            throw new ConflictException();
         }
+        Optional<Subtask> wrongSubtaskEpicsId = epic.getSubtasks().stream()
+                .filter(subtask -> subtask.getEpicId() != epic.getId())
+                .findFirst();
+        if (wrongSubtaskEpicsId.isPresent()) {
+            throw new ConflictException();
+        }
+
         epics.put(epic.getId(), epic);
+
+        epic.getSubtasks().forEach(subtask -> subtasks.put(subtask.getId(), subtask));
+
+        updateEpicStatus(epic);
     }
 
     @Override
     public void createSubtask(Subtask subtask) {
         if (subtasks.containsKey(subtask.getId())) {
-            return;
+            throw new ConflictException();
         }
         if (isTasksOverlap(subtask)) {
-            return;
+            throw new ConflictException();
         }
         if (!epics.containsKey(subtask.getEpicId())) {
-            return;
+            throw new NotFoundException();
         }
 
         int epicId = subtask.getEpicId();
@@ -115,6 +123,9 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Task getTaskById(int taskId) {
         Task task = tasks.get(taskId);
+        if (task == null) {
+            throw new NotFoundException();
+        }
         history.add(task);
         return task;
     }
@@ -122,6 +133,9 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Epic getEpicById(int epicId) {
         Epic epic = epics.get(epicId);
+        if (epic == null) {
+            throw new NotFoundException();
+        }
         history.add(epic);
         return epic;
     }
@@ -129,6 +143,9 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Subtask getSubtaskById(int subtaskId) {
         Subtask subtask = subtasks.get(subtaskId);
+        if (subtask == null) {
+            throw new NotFoundException();
+        }
         history.add(subtask);
         return subtask;
     }
@@ -136,7 +153,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateTask(Task task) {
         if (isTasksOverlap(task)) {
-            return;
+            throw new ConflictException();
         }
 
         tasks.put(task.getId(), task);
@@ -175,6 +192,13 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateEpic(Epic epic) {
+        Optional<Subtask> wrongSubtaskEpicsId = epic.getSubtasks().stream()
+                .filter(subtask -> subtask.getEpicId() != epic.getId())
+                .findFirst();
+        if (wrongSubtaskEpicsId.isPresent()) {
+            throw new ConflictException();
+        }
+
         epics.put(epic.getId(), epic);
 
         epic.getSubtasks().forEach(subtask -> subtasks.put(subtask.getId(), subtask));
@@ -194,13 +218,18 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateSubTask(Subtask subtask) {
         if (isTasksOverlap(subtask)) {
-            return;
+            throw new ConflictException();
         }
 
         Subtask thisSubtask = subtasks.get(subtask.getId());
 
-        if (thisSubtask.getEpicId() != subtask.getEpicId()) {
+        if (thisSubtask == null) {
+            createSubtask(subtask);
             return;
+        }
+
+        if (thisSubtask.getEpicId() != subtask.getEpicId()) {
+            throw new ConflictException();
         }
 
         int epicId = subtask.getEpicId();
@@ -213,6 +242,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void removeTaskById(int taskId) {
+        if (tasks.get(taskId) == null) {
+            return;
+        }
+
         history.remove(taskId);
         deletePrioritizedTasks(tasks.get(taskId));
         tasks.remove(taskId);
@@ -220,6 +253,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void removeEpicById(int epicId) {
+        if (epics.get(epicId) == null) {
+            return;
+        }
+
         history.remove(epicId);
         epics.remove(epicId);
         ArrayList<Integer> subtasksToRemove = new ArrayList<>();
@@ -234,6 +271,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void removeSubtaskById(int subtaskId) {
+        if (subtasks.get(subtaskId) == null) {
+            return;
+        }
+
         Subtask subtask = getSubtaskById(subtaskId);
 
         history.remove(subtaskId);
@@ -251,6 +292,10 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public List<Subtask> getSubtasksOfEpic(int epicId) {
         Epic epic = epics.get(epicId);
+
+        if (epic == null) {
+            throw new NotFoundException();
+        }
 
         return epic.getSubtasks();
     }
@@ -297,9 +342,9 @@ public class InMemoryTaskManager implements TaskManager {
                         // И все равно усложнил до плохо читаемого вида, что бы при соприкосновении границ отрезков
                         // времени задача все равно создавалась
                         task.getEndTime().get().isBefore(existingTask.getStartTime()) ==
-                        task.getEndTime().get().isAfter(existingTask.getStartTime()) ||
+                                task.getEndTime().get().isAfter(existingTask.getStartTime()) ||
                         task.getStartTime().isAfter(existingTask.getEndTime().get()) ==
-                        task.getStartTime().isBefore(existingTask.getEndTime().get())));
+                                task.getStartTime().isBefore(existingTask.getEndTime().get())));
     }
 }
 
